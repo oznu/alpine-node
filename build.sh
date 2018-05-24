@@ -7,6 +7,8 @@ docker run --rm --privileged multiarch/qemu-user-static:register --reset
 LTS=8.11.2
 LATEST=10.2.0
 
+mkdir -p out
+
 for NODE_VERSION in $LTS $LATEST; do
     for QEMU_ARCH in x86_64 aarch64 arm; do
         if [ -f "out/node-v$NODE_VERSION-linux-$QEMU_ARCH-alpine.tar.gz" ]; then
