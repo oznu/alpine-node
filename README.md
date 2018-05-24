@@ -6,8 +6,16 @@ Builds can be found under [releases](https://github.com/oznu/alpine-node/release
 
 Install:
 
-```
-apk add --no-cache libgcc libstdc++
+```shell
+# Install deps
+apk add --no-cache libgcc libstdc++ curl
 
+# Download pre-built binary
+curl -fLO https://github.com/oznu/alpine-node/releases/download/8.11.2/node-v8.11.2-linux-x86_64-alpine.tar.gz
+
+# Extract / install
 tar -xzf node-v8.11.2-linux-x86_64-alpine.tar.gz -C /usr --strip-components=1 --no-same-owner
+
+# Clean Up
+rm -rf node-v8.11.2-linux-x86_64-alpine.tar.gz
 ```
