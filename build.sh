@@ -4,8 +4,16 @@ set -e
 
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
-LTS=8.11.2
-LATEST=10.2.1
+INDEX=$(curl -s https://nodejs.org/dist/index.json)
+
+LTS=$(echo $INDEX | jq -r 'map(select(.lts))[0].version')
+LATEST=$(echo $INDEX | jq -r 'map(select(.lts = false))[0].version')
+
+LATEST="${LATEST/v/}"
+LTS="${LTS/v/}"
+
+echo Current Latest: $LATEST
+echo Current LTS: $LTS
 
 mkdir -p out
 
