@@ -5,7 +5,7 @@ set -e
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
 LTS=8.11.2
-LATEST=10.2.0
+LATEST=10.2.1
 
 mkdir -p out
 
