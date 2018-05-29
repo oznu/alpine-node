@@ -6,8 +6,9 @@ ENV QEMU_ARCH=${QEMU_ARCH:-x86_64}
 
 COPY qemu/qemu-${QEMU_ARCH}-static /usr/bin/
 
-CMD rm -rf /dest/usr \
-    &&addgroup -g 1000 node \
+CMD mkdir /dest \
+    && rm -rf /dest/usr \
+    && addgroup -g 1000 node \
     && adduser -u 1000 -G node -s /bin/sh -D node \
     && apk add --no-cache \
         libstdc++ \
@@ -59,4 +60,5 @@ CMD rm -rf /dest/usr \
     && make DESTDIR=/dest install \
     && paxmark -m /dest/usr/local/bin/node \
     && cd /dest \
-    && tar -C /dest/usr -zcvf "node-v$NODE_VERSION-linux-${QEMU_ARCH:-x86_64}-alpine.tar.gz" .
+    && tar -C /dest/usr -zcvf "node-v$NODE_VERSION-linux-${QEMU_ARCH:-x86_64}-alpine.tar.gz" . \
+    && cp "node-v$NODE_VERSION-linux-${QEMU_ARCH:-x86_64}-alpine.tar.gz" /out/

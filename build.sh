@@ -30,8 +30,7 @@ for NODE_VERSION in $LTS $LATEST; do
             esac \
             && echo "Building node $NODE_VERSION for $QEMU_ARCH using $BASE_IMAGE" \
             && docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg QEMU_ARCH=$QEMU_ARCH -t node-$QEMU_ARCH . \
-            && docker run --rm -e NODE_VERSION=$NODE_VERSION -v $(pwd)/out:/dest node-$QEMU_ARCH
+            && docker run --rm -e NODE_VERSION=$NODE_VERSION -v $(pwd)/out:/out node-$QEMU_ARCH
         fi
     done
 done
-
