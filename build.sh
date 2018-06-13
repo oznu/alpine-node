@@ -34,3 +34,6 @@ for NODE_VERSION in $LTS $LATEST; do
         fi
     done
 done
+
+./release.sh "$LTS" "$LTS - LTS"
+./release.sh "$LATEST" "$LATEST"

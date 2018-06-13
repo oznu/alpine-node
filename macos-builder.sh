@@ -1,7 +1,11 @@
 #!/bin/bash
 
 # this script will automatically build the latest versions of Node.js on macOS
-# requires docker-machine and virtualbox to be installed
+# requires docker-machine, virtualbox and jq to be installed
+
+cd $(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
+
+osascript -e 'display notification "Node.js build started" with title "oznu/alpine-node"'
 
 HOST_CPU=$(sysctl -n hw.ncpu)
 HOST_MEMORY=$(sysctl -n hw.memsize)
@@ -24,3 +28,5 @@ eval $(docker-machine env $VM_NAME)
 ./build.sh
 
 docker-machine rm -y $VM_NAME
+
+osascript -e 'display notification "Node.js build finished" with title "oznu/alpine-node"'
