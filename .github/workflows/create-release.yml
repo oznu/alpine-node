@@ -1,10 +1,11 @@
+name: Create Release
+
 on: 
   workflow_dispatch:
     inputs:
       version:
         description: 'Node.js Version'     
         required: true
-        default: 'warning'
 
 jobs:
   build:
