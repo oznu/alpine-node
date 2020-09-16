@@ -1,0 +1,50 @@
+name: Build
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - name: x86_64
+            os: ubuntu-latest
+            QEMU_ARCH: x86_64
+            BASE_IMAGE: library/alpine
+
+          - name: aarch64
+            os: ubuntu-latest
+            QEMU_ARCH: aarch64
+            BASE_IMAGE: arm64v8/alpine
+
+          - name: arm
+            os: ubuntu-latest
+            QEMU_ARCH: arm
+            BASE_IMAGE: arm32v6/alpine
+
+  steps: 
+    # checkout repo
+    - uses: actions/checkout@v2
+
+    # setup multi-arch build support
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get --yes --no-install-recommends install binfmt-support qemu-user-static
+        docker run --rm --privileged multiarch/qemu-user-static:register --reset
+
+    # get branch / tag name
+    - name: Get Branch / Tag Name
+      id: get_branch
+      run: |
+        export RELEASE_NAME=$(if [[ ${GITHUB_REF} =~ "refs/tags/" ]]; then echo ${GITHUB_REF/refs\/tags\//}; else echo ${GITHUB_REF/refs\/heads\//}; fi)
+        echo $RELEASE_NAME
+        echo ::set-output name=NAME::${RELEASE_NAME}
+
+    # build the image
+    - name: Build Image
+      run: |
+        docker build --build-arg BASE_IMAGE=${{ matrix.BASE_IMAGE }} --build-arg QEMU_ARCH=${{ matrix.QEMU_ARCH }} -t node-builder .
