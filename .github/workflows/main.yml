@@ -2,7 +2,7 @@ name: Build
 
 on:
   release:
-    types: [released]
+    types: [created]
 
 jobs:
   build:
@@ -15,15 +15,15 @@ jobs:
             QEMU_ARCH: x86_64
             BASE_IMAGE: library/alpine
 
-          - name: aarch64
-            os: ubuntu-latest
-            QEMU_ARCH: aarch64
-            BASE_IMAGE: arm64v8/alpine
+          # - name: aarch64
+          #   os: ubuntu-latest
+          #   QEMU_ARCH: aarch64
+          #   BASE_IMAGE: arm64v8/alpine
 
-          - name: arm
-            os: ubuntu-latest
-            QEMU_ARCH: arm
-            BASE_IMAGE: arm32v6/alpine
+          # - name: arm
+          #   os: ubuntu-latest
+          #   QEMU_ARCH: arm
+          #   BASE_IMAGE: arm32v6/alpine
 
     steps:
     # checkout repo
@@ -36,15 +36,29 @@ jobs:
         sudo apt-get --yes --no-install-recommends install binfmt-support qemu-user-static
         docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
-    # get branch / tag name
-    - name: Get Branch / Tag Name
-      id: get_branch
-      run: |
-        export RELEASE_NAME=$(if [[ ${GITHUB_REF} =~ "refs/tags/" ]]; then echo ${GITHUB_REF/refs\/tags\//}; else echo ${GITHUB_REF/refs\/heads\//}; fi)
-        echo $RELEASE_NAME
-        echo ::set-output name=NAME::${RELEASE_NAME}
+    - name: Get the upload URL for a release
+      id: get_release
+      uses: bruceadams/get-release@v1.2.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     # build the image
     - name: Build Image
       run: |
         docker build --build-arg BASE_IMAGE=${{ matrix.BASE_IMAGE }} --build-arg QEMU_ARCH=${{ matrix.QEMU_ARCH }} -t node-builder .
+
+    - name: Build Node v${{ steps.get_release.outputs.tag_name }}
+      env:
+        NODE_VERSION: ${{ steps.get_release.outputs.tag_name }}
+      run: |
+        docker run --rm -e NODE_VERSION=$NODE_VERSION -v $(pwd)/out:/out node-builder
+
+    - name: Upload release binary
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: ./out/node-v${{ steps.get_release.outputs.tag_name }}-linux-${{ matrix.QEMU_ARCH }}-alpine.tar.gz
+        asset_name: node-v${{ steps.get_release.outputs.tag_name }}-linux-${{ matrix.QEMU_ARCH }}-alpine.tar.gz
+        asset_content_type: application/octet-stream

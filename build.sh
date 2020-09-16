@@ -17,7 +17,7 @@ echo Current LTS: $LTS
 
 mkdir -p out
 
-for NODE_VERSION in $LTS $LATEST; do
+for NODE_VERSION in $LTS; do
     for QEMU_ARCH in x86_64 aarch64 arm; do
         if [ -f "out/node-v$NODE_VERSION-linux-$QEMU_ARCH-alpine.tar.gz" ]; then
             echo "node-v$NODE_VERSION-linux-$QEMU_ARCH-alpine already compiled"

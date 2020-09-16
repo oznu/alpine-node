@@ -8,6 +8,10 @@
 # sudo chmod u+s /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve 
 #
 
+base=https://github.com/docker/machine/releases/download/v0.16.0 &&
+  curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/usr/local/bin/docker-machine &&
+  chmod +x /usr/local/bin/docker-machine
+
 cd $(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
 HOST_CPU=$(sysctl -n hw.ncpu)
