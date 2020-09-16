@@ -25,7 +25,7 @@ jobs:
             QEMU_ARCH: arm
             BASE_IMAGE: arm32v6/alpine
 
-  steps: 
+    steps:
     # checkout repo
     - uses: actions/checkout@v2
 
