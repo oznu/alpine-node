@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -40,4 +40,4 @@ for NODE_VERSION in $LTS; do
 done
 
 ./release.sh "$LTS" "$LTS - LTS"
-./release.sh "$LATEST" "$LATEST"
+# ./release.sh "$LATEST" "$LATEST"
