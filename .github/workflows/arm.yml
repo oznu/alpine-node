@@ -40,13 +40,16 @@ jobs:
 
     # set docker-machine envs
     - name: Set Docker Env
-      run: eval $(docker-machine env aws-docker)
+      env: |
+        SHELL: "/bin/bash"
+      run: eval $(docker-machine env --shell bash aws-docker)
 
     # build arm
     - name: Build ARM
       env:
         NODE_VERSION: ${{ steps.get_release.outputs.tag_name }}
       run: |
+        mkdir -p out
         docker build --build-arg BASE_IMAGE=arm32v6/alpine --build-arg QEMU_ARCH=arm -t node-builder .
         docker run --rm -e NODE_VERSION=$NODE_VERSION -v $(pwd)/out:/out node-builder
         docker-machine scp "aws-docker:$(pwd)/out/*" "$(pwd)/out/"
@@ -62,25 +65,25 @@ jobs:
         asset_name: node-v${{ steps.get_release.outputs.tag_name }}-linux-arm-alpine.tar.gz
         asset_content_type: application/octet-stream
 
-    # build arm64
-    - name: Build ARM64
-      env:
-        NODE_VERSION: ${{ steps.get_release.outputs.tag_name }}
-      run: |
-        docker build --build-arg BASE_IMAGE=arm64v8/alpine --build-arg QEMU_ARCH=aarch64 -t node-builder .
-        docker run --rm -e NODE_VERSION=$NODE_VERSION -v $(pwd)/out:/out node-builder
-        docker-machine scp "aws-docker:$(pwd)/out/*" "$(pwd)/out/"
+    # # build arm64
+    # - name: Build ARM64
+    #   env:
+    #     NODE_VERSION: ${{ steps.get_release.outputs.tag_name }}
+    #   run: |
+    #     docker build --build-arg BASE_IMAGE=arm64v8/alpine --build-arg QEMU_ARCH=aarch64 -t node-builder .
+    #     docker run --rm -e NODE_VERSION=$NODE_VERSION -v $(pwd)/out:/out node-builder
+    #     docker-machine scp "aws-docker:$(pwd)/out/*" "$(pwd)/out/"
 
-    # upload arm64
-    - name: Upload ARM64
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-      with:
-        upload_url: ${{ steps.get_release.outputs.upload_url }}
-        asset_path: ./out/node-v${{ steps.get_release.outputs.tag_name }}-linux-aarch64-alpine.tar.gz
-        asset_name: node-v${{ steps.get_release.outputs.tag_name }}-linux-aarch64-alpine.tar.gz
-        asset_content_type: application/octet-stream
+    # # upload arm64
+    # - name: Upload ARM64
+    #   uses: actions/upload-release-asset@v1.0.2
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+    #   with:
+    #     upload_url: ${{ steps.get_release.outputs.upload_url }}
+    #     asset_path: ./out/node-v${{ steps.get_release.outputs.tag_name }}-linux-aarch64-alpine.tar.gz
+    #     asset_name: node-v${{ steps.get_release.outputs.tag_name }}-linux-aarch64-alpine.tar.gz
+    #     asset_content_type: application/octet-stream
 
     # cleanup
     - name: Cleanup
