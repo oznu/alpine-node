@@ -38,18 +38,14 @@ jobs:
           --amazonec2-instance-type c6g.4xlarge \
           aws-docker
 
-    # set docker-machine envs
-    - name: Set Docker Env
-      env:
-        SHELL: /bin/bash
-      run: eval $(docker-machine env --shell bash aws-docker)
-
     # build arm
     - name: Build ARM
       env:
         NODE_VERSION: ${{ steps.get_release.outputs.tag_name }}
+        SHELL: /bin/bash
       run: |
         mkdir -p out
+        eval $(docker-machine env --shell bash aws-docker)
         docker build --build-arg BASE_IMAGE=arm32v6/alpine --build-arg QEMU_ARCH=arm -t node-builder .
         docker run --rm -e NODE_VERSION=$NODE_VERSION -v $(pwd)/out:/out node-builder
         docker-machine scp "aws-docker:$(pwd)/out/*" "$(pwd)/out/"
