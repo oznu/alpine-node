@@ -40,7 +40,7 @@ jobs:
 
     # set docker-machine envs
     - name: Set Docker Env
-      env: |
+      env:
         SHELL: "/bin/bash"
       run: eval $(docker-machine env --shell bash aws-docker)
 
