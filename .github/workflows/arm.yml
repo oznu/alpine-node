@@ -1,0 +1,82 @@
+name: Build ARM + ARM64
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # checkout repo
+    - uses: actions/checkout@v2
+
+    - name: Get the upload URL for a release
+      id: get_release
+      uses: bruceadams/get-release@v1.2.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # deploy arm docker-machine (it's too slow to cross-compile)
+    - name: Deploy Docker Machine
+      run: |
+        docker-machine create \
+          --driver amazonec2 \
+          --amazonec2-access-key "${{ secrets.AWS_ACCESS_KEY }}" \
+          --amazonec2-secret-key "${{ secrets.AWS_SECRET_KEY }}" \
+          --amazonec2-open-port 8000 \
+          --amazonec2-request-spot-instance \
+          --amazonec2-region ap-southeast-2 \
+          --amazonec2-ami ami-07bad9b1fb33241de \
+          --amazonec2-instance-type c6g.4xlarge \
+          aws-docker
+
+    # set docker-machine envs
+    - name: Set Docker Env
+      run: eval $(docker-machine env aws-docker)
+
+    # build arm
+    - name: Build ARM
+      env:
+        NODE_VERSION: ${{ steps.get_release.outputs.tag_name }}
+      run: |
+        docker build --build-arg BASE_IMAGE=arm32v6/alpine --build-arg QEMU_ARCH=arm -t node-builder .
+        docker run --rm -e NODE_VERSION=$NODE_VERSION -v $(pwd)/out:/out node-builder
+        docker-machine scp "aws-docker:$(pwd)/out/*" "$(pwd)/out/"
+
+    # upload arm
+    - name: Upload ARM
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: ./out/node-v${{ steps.get_release.outputs.tag_name }}-linux-arm-alpine.tar.gz
+        asset_name: node-v${{ steps.get_release.outputs.tag_name }}-linux-arm-alpine.tar.gz
+        asset_content_type: application/octet-stream
+
+    # build arm64
+    - name: Build ARM64
+      env:
+        NODE_VERSION: ${{ steps.get_release.outputs.tag_name }}
+      run: |
+        docker build --build-arg BASE_IMAGE=arm64v8/alpine --build-arg QEMU_ARCH=aarch64 -t node-builder .
+        docker run --rm -e NODE_VERSION=$NODE_VERSION -v $(pwd)/out:/out node-builder
+        docker-machine scp "aws-docker:$(pwd)/out/*" "$(pwd)/out/"
+
+    # upload arm64
+    - name: Upload ARM64
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: ./out/node-v${{ steps.get_release.outputs.tag_name }}-linux-aarch64-alpine.tar.gz
+        asset_name: node-v${{ steps.get_release.outputs.tag_name }}-linux-aarch64-alpine.tar.gz
+        asset_content_type: application/octet-stream
+
+    # cleanup
+    - name: Cleanup
+      if: ${{ always() }}
+      run: docker-machine rm -y aws-docker
