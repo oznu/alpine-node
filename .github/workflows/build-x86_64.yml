@@ -1,0 +1,40 @@
+name: Build x86_64
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # checkout repo
+    - uses: actions/checkout@v2
+
+    - name: Get the upload URL for a release
+      id: get_release
+      uses: bruceadams/get-release@v1.2.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+    # build x64
+    - name: Build x64
+      env:
+        NODE_VERSION: ${{ steps.get_release.outputs.tag_name }}
+      run: |
+        mkdir -p out
+        docker build --build-arg BASE_IMAGE=library/alpine --build-arg QEMU_ARCH=x86_64 -t node-builder .
+        docker run --rm -e NODE_VERSION=$NODE_VERSION -v $(pwd)/out:/out node-builder
+
+    # upload x64
+    - name: Upload x64
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: ./out/node-v${{ steps.get_release.outputs.tag_name }}-linux-x86_64-alpine.tar.gz
+        asset_name: node-v${{ steps.get_release.outputs.tag_name }}-linux-x86_64-alpine.tar.gz
+        asset_content_type: application/octet-stream
