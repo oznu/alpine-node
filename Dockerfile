@@ -52,6 +52,7 @@ CMD mkdir /dest \
     56730D5401028683275BD23C23EFEFE93C4CFFFE \
     114F43EE0176B71C7BC219DD50A3051F888C628D \
     7937DFD2AB06298B2293C3187D33FF9D0246406D \
+    74F12602B6F1C4E913FAA37AD3A89613643B6201 \
   ; do \
     gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
     gpg --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
