@@ -34,8 +34,8 @@ CMD mkdir /dest \
         openssl-dev \
         http-parser-dev \
         c-ares-dev \
-    && git clone https://github.com/canterberry/nodejs-keys.git \
-    && nodejs-keys/cli.sh import \
+    && git clone https://github.com/nodejs/release-keys.git \
+    && release-keys/cli.sh import \
     && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION.tar.xz" \
     && curl -SLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
     && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
