@@ -1,5 +1,5 @@
 ARG BASE_IMAGE
-FROM ${BASE_IMAGE:-library/alpine}:3.10
+FROM ${BASE_IMAGE:-library/alpine}:3.14
 
 ARG QEMU_ARCH
 ENV QEMU_ARCH=${QEMU_ARCH:-x86_64}
@@ -24,7 +24,7 @@ CMD mkdir /dest \
         libgcc \
         linux-headers \
         make \
-        python \
+        python3 \
         paxmark \
         ca-certificates \
         openssl-dev \
@@ -34,6 +34,7 @@ CMD mkdir /dest \
         openssl-dev \
         http-parser-dev \
         c-ares-dev \
+    && ln -sf /usr/bin/python3 /usr/bin/python \
     && git clone https://github.com/nodejs/release-keys.git \
     && release-keys/cli.sh import \
     && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION.tar.xz" \

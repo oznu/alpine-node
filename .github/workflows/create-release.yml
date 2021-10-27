@@ -25,4 +25,4 @@ jobs:
           release_name: ${{ github.event.inputs.version }}
           body: |
             Node.js v${{ github.event.inputs.version }}
-          prerelease: true
+          prerelease: false
